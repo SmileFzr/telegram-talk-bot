@@ -1,0 +1,19 @@
+# 千万别把 token 和聊天索引提交到仓库
+.env
+forward_map.json
+forward_map.json.tmp
+*.tmp
+*.json.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env.venv
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
