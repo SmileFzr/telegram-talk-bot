@@ -50,7 +50,7 @@ tail -f ~/telegram-talk-bot/bot.log
 # 停止机器人
 pkill -f "python bot.py"
 
-# 更新到最新版本（会自动重配，但保留你的 .env 吗？不会——会重新问）
+# 更新到最新版本（会问是否保留已有配置，一般直接回车）
 cd ~/telegram-talk-bot && bash setup.sh
 ```
 

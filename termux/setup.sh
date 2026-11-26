@@ -59,15 +59,17 @@ echo ""
 echo ">>> [6/7] 配置机器人"
 echo "（提示：TOKEN 从 @BotFather 获取；输入内容只会写进本机 .env，不会上传）"
 echo ""
-read -r -p "请输入 BOT TOKEN: " TOKEN
-[ -z "$TOKEN" ] && fail "TOKEN 不能为空"
 
-read -r -p "管理员 Chat ID（直接回车 = 8128875103）: " ADMIN
-ADMIN=${ADMIN:-8128875103}
-
-read -r -p "代理地址（全局 VPN 请直接回车留空；分应用代理填 http://IP:端口）: " PROXY
-
-cat > "$DIR/.env" <<EOF
+if [ -f "$DIR/.env" ]; then
+  read -r -p "检测到已有配置，是否保留？(Y/n，回车=保留): " KEEP
+  case "$KEEP" in
+    [Nn]*)
+      read -r -p "请输入 BOT TOKEN: " TOKEN
+      [ -z "$TOKEN" ] && fail "TOKEN 不能为空"
+      read -r -p "管理员 Chat ID（直接回车 = 8128875103）: " ADMIN
+      ADMIN=${ADMIN:-8128875103}
+      read -r -p "代理地址（全局 VPN 请直接回车留空）: " PROXY
+      cat > "$DIR/.env" <<EOF
 TOKEN=$TOKEN
 ADMIN_CHAT_ID=$ADMIN
 PROXY_URL=$PROXY
@@ -77,7 +79,28 @@ PRIVATE_ONLY=false
 ADMIN_HINT=true
 REPLY_QUOTE=true
 EOF
-ok "配置已写入 .env"
+      ok "配置已更新" ;;
+    *)
+      ok "保留已有配置" ;;
+  esac
+else
+  read -r -p "请输入 BOT TOKEN: " TOKEN
+  [ -z "$TOKEN" ] && fail "TOKEN 不能为空"
+  read -r -p "管理员 Chat ID（直接回车 = 8128875103）: " ADMIN
+  ADMIN=${ADMIN:-8128875103}
+  read -r -p "代理地址（全局 VPN 请直接回车留空；分应用代理填 http://IP:端口）: " PROXY
+  cat > "$DIR/.env" <<EOF
+TOKEN=$TOKEN
+ADMIN_CHAT_ID=$ADMIN
+PROXY_URL=$PROXY
+STATE_FILE=$DIR/forward_map.json
+SEND_ACK=false
+PRIVATE_ONLY=false
+ADMIN_HINT=true
+REPLY_QUOTE=true
+EOF
+  ok "配置已写入 .env"
+fi
 
 # ---------------------------------------------------------------- 启动脚本
 echo ">>> [7/7] 创建守护脚本与开机自启..."
