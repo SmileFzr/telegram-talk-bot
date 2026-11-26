@@ -50,8 +50,10 @@ cd "$DIR" || fail "无法进入 $DIR"
 
 # ---------------------------------------------------------------- Python 依赖
 echo ">>> [5/7] 安装 Python 依赖..."
-python -m pip install --quiet --upgrade pip
-python -m pip install --quiet -r requirements.txt || fail "依赖安装失败，请检查网络后重试 bash setup.sh"
+# Termux 新版禁止 pip install --upgrade pip（会破坏系统 python-pip 包），直接用自带 pip 即可
+python -m pip install --quiet -r requirements.txt \
+  || python -m pip install --quiet --break-system-packages -r requirements.txt \
+  || fail "依赖安装失败，请检查网络后重试 bash setup.sh"
 ok "Python 依赖已就绪"
 
 # ---------------------------------------------------------------- 配置
