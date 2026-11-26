@@ -21,6 +21,7 @@ Telegram 传话筒机器人（Relay Bot）
 """
 from __future__ import annotations
 
+import asyncio
 import html
 import json
 import logging
@@ -628,14 +629,28 @@ def build_application() -> Application:
     return app
 
 
+def ensure_event_loop() -> None:
+    """
+    Python 3.12+ 起 asyncio.get_event_loop() 不再自动创建事件循环，
+    3.14 直接抛 RuntimeError。PTB 21.x 的 run_polling 内部依赖旧行为，
+    这里显式建一个并设为当前，避免 Termux 新版 Python 启动时崩溃。
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("event loop is closed")
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
+
 def main() -> None:
     load_state()
-    app = build_application()
     log.info(
         "🤖 传话筒启动中… 管理员=%s | 仅私聊=%s", ADMIN_CHAT_ID or "未设置", PRIVATE_ONLY
     )
     # 传话筒不能丢消息：重启 / 停机期间积压的消息必须补收，所以 False
     for attempt in range(1, 4):
+        ensure_event_loop()  # 兼容 Python 3.14（Termux 新版）
         app = build_application()
         try:
             app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=False)
