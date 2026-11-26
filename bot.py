@@ -546,6 +546,18 @@ async def setup_notice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------- 启动
+async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    兜底错误处理：国内网络抖动导致的超时静默忽略，不再刷一屏英文 traceback；
+    真正的代码 bug 仍保留完整日志，便于排查。
+    """
+    exc = context.error
+    if isinstance(exc, NetworkError):
+        log.debug("网络抖动已忽略：%s", exc)
+        return
+    log.error("处理消息时出错：%s", exc, exc_info=exc)
+
+
 async def post_init(app: Application) -> None:
     # 用官方 post_init 钩子设置命令菜单（原代码的 run_once + lambda 不会被执行）
     try:
@@ -588,6 +600,8 @@ def build_application() -> Application:
         .get_updates_request(make_request())
     )
     app = builder.build()
+    # 注册兜底错误处理，避免网络抖动时刷屏（见 on_error）
+    app.add_error_handler(on_error)
 
     # group 0：命令
     app.add_handler(CommandHandler("start", cmd_start), group=0)
