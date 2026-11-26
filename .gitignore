@@ -4,6 +4,7 @@ forward_map.json
 forward_map.json.tmp
 *.tmp
 *.json.bak
+*.log
 
 # Python
 __pycache__/
